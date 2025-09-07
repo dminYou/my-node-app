@@ -1,6 +1,6 @@
 const express = require('express');
+const serverless = require('serverless-http');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // 中间件
 app.use(express.json());
@@ -8,16 +8,16 @@ app.use(express.json());
 // 路由
 app.get('/', (req, res) => {
   res.json({
-    message: '🚀 Node.js App Deployed on Vercel!',
+    message: '🚀 Node.js App Deployed on Netlify!',
     timestamp: new Date().toISOString(),
-    status: 'running'
+    status: 'success'
   });
 });
 
 app.get('/api/users', (req, res) => {
   res.json([
-    { id: 1, name: 'Alice' },
-    { id: 2, name: 'Bob' }
+    { id: 1, name: 'Alice', email: 'alice@example.com' },
+    { id: 2, name: 'Bob', email: 'bob@example.com' }
   ]);
 });
 
@@ -28,21 +28,17 @@ app.post('/api/echo', (req, res) => {
   });
 });
 
-// 健康检查
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy', uptime: process.uptime() });
+  res.status(200).json({ 
+    status: 'healthy', 
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV 
+  });
 });
 
-// 错误处理
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+// Netlify Functions 适配
+const handler = serverless(app);
 
-// 启动服务器
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`🌐 Visit: http://localhost:${PORT}`);
-});
-
+// 导出供 Netlify 使用
 module.exports = app;
+module.exports.handler = handler;
